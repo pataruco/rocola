@@ -5,4 +5,7 @@ edition.workspace = true
 repository.workspace = true
 description = "Domain types and matching engine for rocola. No I/O, no network dependencies."
 
+[lints]
+workspace = true
+
 [dependencies]

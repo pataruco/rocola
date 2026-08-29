@@ -5,5 +5,8 @@ edition.workspace = true
 repository.workspace = true
 description = "Apple Music target for rocola: tokens, catalog resolve, playlist write."
 
+[lints]
+workspace = true
+
 [dependencies]
 rocola-core = { path = "../rocola-core", version = "0.0.0" }

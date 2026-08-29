@@ -5,6 +5,9 @@ edition.workspace = true
 repository.workspace = true
 description = "Recreate a Spotify playlist on Apple Music, from the terminal."
 
+[lints]
+workspace = true
+
 [dependencies]
 rocola-core = { path = "../rocola-core", version = "0.0.0" }
 rocola-spotify = { path = "../rocola-spotify", version = "0.0.0" }
