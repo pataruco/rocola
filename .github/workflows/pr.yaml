@@ -22,26 +22,30 @@ env:
 
 jobs:
   ci:
+    name: Format, lint and test
     runs-on: ubuntu-latest
     steps:
-      # v7
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Check out code
+        # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust (stable, clippy, rustfmt)
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
 
-      - name: Run sccache-cache
+      - name: Set up sccache
         uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba
 
-      - uses: taiki-e/install-action@742a3317eac7bd62f91cd888b4eead5e784ba833
+      - name: Install just
+        uses: taiki-e/install-action@742a3317eac7bd62f91cd888b4eead5e784ba833
         with:
           tool: just
 
-      - name: Format
+      - name: Check formatting
         run: cargo fmt --check
 
-      - name: Lint
+      - name: Lint (clippy)
         run: just lint
 
       - name: Test
