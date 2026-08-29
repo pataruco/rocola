@@ -1,9 +1,13 @@
 //! Spotify source: Authorization Code + PKCE auth and playlist fetch.
 
 pub mod api_types;
+pub mod auth;
+pub mod client;
 pub mod pkce;
 pub mod url;
 
+pub use auth::{TokenSet, refresh, run_auth_flow};
+pub use client::fetch_playlist;
 pub use pkce::{Pkce, REDIRECT_URI, authorize_url};
 pub use url::{PlaylistRef, parse_playlist_url};
 

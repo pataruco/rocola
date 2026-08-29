@@ -31,3 +31,7 @@ ci:
 # Run the TUI
 run:
     cargo run -p rocola
+
+# Live network checks (never run in CI). Copy tests/hurl/vars.env.example to tests/hurl/vars.env and fill it in first.
+hurl-spotify:
+    hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_playlist.hurl tests/hurl/spotify_refresh.hurl
