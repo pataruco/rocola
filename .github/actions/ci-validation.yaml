@@ -1,0 +1,19 @@
+name: 'CI Validation'
+description: 'Check upstream jobs for failures or cancellations'
+inputs:
+  jobs:
+    description: 'JSON string of the needs context'
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Check jobs for errors
+      #v9
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+      env:
+        JOBS_JSON: ${{ inputs.jobs }}
+      with:
+        script: |
+          const { default: checkJobsForErrors } = await import('${{ github.workspace }}/.github/scripts/check-for-errors.mjs');
+          const jobs = JSON.parse(process.env.JOBS_JSON);
+          checkJobsForErrors({ core, jobs });

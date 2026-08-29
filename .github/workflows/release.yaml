@@ -1,0 +1,48 @@
+name: Release
+run-name: ${{ github.actor }} is releasing
+
+on:
+  push:
+    branches:
+      - main
+    # paths:
+    #   - .github/workflows/release.yaml
+    #   - "**/CHANGELOG.md"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+        # v5
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_GH_TOKEN }}
+  ci-validation:
+    name: CI validation
+    needs: [release-please]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout 🛎️
+        # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Check jobs for errors
+        uses: ./.github/actions/ci-validation
+        with:
+          jobs: ${{ toJSON(needs) }}
