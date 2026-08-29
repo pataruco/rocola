@@ -1,0 +1,97 @@
+[
+  {
+    "name": "plain exact match",
+    "source": { "title": "Umbrella", "artists": ["Rihanna"], "album": "Good Girl Gone Bad", "duration_ms": 275000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "1", "title": "Umbrella", "artists": ["Rihanna"], "album": "Good Girl Gone Bad", "duration_ms": 275000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "isrc hit close duration",
+    "source": { "title": "Vámonos", "artists": ["Chavela Vargas"], "album": "Colección", "duration_ms": 187000, "isrc": "MXF049800212" },
+    "candidates": [
+      { "catalog_id": "2", "title": "Vámonos", "artists": ["Chavela Vargas"], "album": "Lo Esencial", "duration_ms": 188500, "matched_by": "Isrc" }
+    ],
+    "expected": "Exact"
+  },
+  {
+    "name": "remaster suffix",
+    "source": { "title": "Bohemian Rhapsody - Remastered 2011", "artists": ["Queen"], "album": "A Night at the Opera", "duration_ms": 354000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "3", "title": "Bohemian Rhapsody", "artists": ["Queen"], "album": "A Night at the Opera (Deluxe)", "duration_ms": 355000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "live version vs studio",
+    "source": { "title": "Wish You Were Here", "artists": ["Pink Floyd"], "album": "Wish You Were Here", "duration_ms": 334000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "4", "title": "Wish You Were Here - Live", "artists": ["Pink Floyd"], "album": "Pulse", "duration_ms": 340000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "feat. credit differences",
+    "source": { "title": "Location", "artists": ["Khalid"], "album": "American Teen", "duration_ms": 217000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "5", "title": "Location (feat. SZA)", "artists": ["Khalid"], "album": "American Teen", "duration_ms": 217000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "explicit/clean same duration",
+    "source": { "title": "goosebumps", "artists": ["Travis Scott"], "album": "Birds in the Trap Sing McKnight", "duration_ms": 243000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "6", "title": "goosebumps (Clean)", "artists": ["Travis Scott"], "album": "Birds in the Trap Sing McKnight (Clean Version)", "duration_ms": 243000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "non-Latin script",
+    "source": { "title": "さくら", "artists": ["いきものがかり"], "album": "さくら", "duration_ms": 300000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "7", "title": "さくら", "artists": ["いきものがかり"], "album": "さくら", "duration_ms": 300000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "same-title different artist",
+    "source": { "title": "Yesterday", "artists": ["The Beatles"], "album": "Help!", "duration_ms": 125000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "8", "title": "Yesterday", "artists": ["Boyz II Men"], "album": "Cooleyhighharmony", "duration_ms": 245000, "matched_by": "Search" }
+    ],
+    "expected": "NotFound"
+  },
+  {
+    "name": "isrc hit with 30s duration gap",
+    "source": { "title": "Bailando", "artists": ["Enrique Iglesias"], "album": "Sex and Love", "duration_ms": 240000, "isrc": "USUM71400123" },
+    "candidates": [
+      { "catalog_id": "9", "title": "Bailando", "artists": ["Enrique Iglesias"], "album": "Sex and Love", "duration_ms": 270000, "matched_by": "Isrc" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "empty candidates",
+    "source": { "title": "Obscure B-side", "artists": ["Nobody"], "album": "Nothing", "duration_ms": 100000, "isrc": null },
+    "candidates": [],
+    "expected": "NotFound"
+  },
+  {
+    "name": "two near-equal candidates",
+    "source": { "title": "Say My Name", "artists": ["Destiny's Child"], "album": "The Writing's on the Wall", "duration_ms": 240000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "10a", "title": "Say My Name", "artists": ["Destiny's Child"], "album": "The Writing's on the Wall", "duration_ms": 255000, "matched_by": "Search" },
+      { "catalog_id": "10b", "title": "Say My Name", "artists": ["Destiny's Child"], "album": "Anthology", "duration_ms": 248000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "duration-only disagreement",
+    "source": { "title": "Someone Like You", "artists": ["Adele"], "album": "21", "duration_ms": 285000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "11", "title": "Someone Like You", "artists": ["Adele"], "album": "21", "duration_ms": 240000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  }
+]
