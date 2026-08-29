@@ -1,0 +1,7 @@
+[workspace]
+resolver = "3"
+members = ["rocola-core", "rocola-spotify", "rocola-apple", "rocola"]
+
+[workspace.package]
+edition = "2024"
+repository = "https://github.com/pataruco/rocola"

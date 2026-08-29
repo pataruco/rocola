@@ -1,0 +1,31 @@
+{
+	"$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+	"release-type": "rust",
+	"bump-minor-pre-major": true,
+	"packages": {
+		"rocola-core": {
+			"package-name": "rocola-core"
+		},
+		"rocola-spotify": {
+			"package-name": "rocola-spotify"
+		},
+		"rocola-apple": {
+			"package-name": "rocola-apple"
+		},
+		"rocola": {
+			"package-name": "rocola",
+			"include-component-in-tag": false
+		}
+	},
+	"plugins": [
+		{
+			"type": "cargo-workspace",
+			"merge": false
+		},
+		{
+			"type": "linked-versions",
+			"groupName": "rocola",
+			"components": ["rocola-core", "rocola-spotify", "rocola-apple", "rocola"]
+		}
+	]
+}

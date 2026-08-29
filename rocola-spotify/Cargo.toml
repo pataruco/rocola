@@ -1,0 +1,9 @@
+[package]
+name = "rocola-spotify"
+version = "0.0.0"
+edition.workspace = true
+repository.workspace = true
+description = "Spotify source for rocola: PKCE auth and playlist fetch."
+
+[dependencies]
+rocola-core = { path = "../rocola-core", version = "0.0.0" }
