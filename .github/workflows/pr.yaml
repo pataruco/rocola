@@ -1,0 +1,48 @@
+name: CI
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: sccache
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba
+
+      - uses: taiki-e/install-action@742a3317eac7bd62f91cd888b4eead5e784ba833
+        with:
+          tool: just
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Lint
+        run: just lint
+
+      - name: Test
+        run: just test
