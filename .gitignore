@@ -2,3 +2,4 @@ target
 .claude
 .superpowers
 docs/superpowers
+tests/hurl/vars.env
