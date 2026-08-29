@@ -1,0 +1,28 @@
+{
+  "next": "https://api.spotify.com/v1/playlists/xyz/tracks?offset=100&limit=100",
+  "items": [
+    {
+      "is_local": false,
+      "track": {
+        "name": "Umbrella",
+        "duration_ms": 275000,
+        "album": { "name": "Good Girl Gone Bad" },
+        "artists": [{ "name": "Rihanna" }, { "name": "JAY-Z" }],
+        "external_ids": { "isrc": "USUM70701234" },
+        "is_local": false
+      }
+    },
+    { "is_local": false, "track": null },
+    {
+      "is_local": true,
+      "track": {
+        "name": "Home Recording",
+        "duration_ms": 100000,
+        "album": { "name": "" },
+        "artists": [{ "name": "Me" }],
+        "external_ids": {},
+        "is_local": true
+      }
+    }
+  ]
+}
