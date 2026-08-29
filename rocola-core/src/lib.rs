@@ -4,7 +4,9 @@
 //! whole matching pipeline can be developed and tested against JSON fixtures
 //! with zero credentials.
 
+pub mod matching;
 pub mod normalize;
 pub mod types;
 
+pub use matching::{classify, score};
 pub use types::{Candidate, Confidence, MatchedBy, SourceTrack, TrackMatch};
