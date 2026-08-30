@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>rocola M0 probe</title>
+<script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" async></script>
+<body>
+<button id="go" disabled>Sign in to Apple Music</button>
+<pre id="out">waiting for MusicKit…</pre>
+<script>
+const out = (m) => document.getElementById('out').textContent = m;
+document.addEventListener('musickitloaded', async () => {
+  try {
+    await MusicKit.configure({
+      developerToken: new URLSearchParams(location.search).get('devtoken'),
+      app: { name: 'rocola-probe', build: '0' },
+    });
+    const btn = document.getElementById('go');
+    btn.disabled = false;
+    btn.onclick = async () => {
+      try {
+        const userToken = await MusicKit.getInstance().authorize();
+        out('SUCCESS — user token (first 16 chars): ' + userToken.slice(0, 16) + '…');
+      } catch (e) { out('AUTHORIZE FAILED: ' + e); }
+    };
+    out('MusicKit configured. Click the button.');
+  } catch (e) { out('CONFIGURE FAILED: ' + e); }
+});
+</script>

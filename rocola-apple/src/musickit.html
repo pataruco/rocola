@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>rocola — connect Apple Music</title>
+<script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" async></script>
+<body style="font-family: system-ui; max-width: 34rem; margin: 4rem auto;">
+<h1>Connect rocola to Apple Music</h1>
+<p id="msg">Loading Apple's sign-in…</p>
+<button id="go" hidden>Sign in to Apple Music</button>
+<script>
+const msg = (t) => document.getElementById('msg').textContent = t;
+document.addEventListener('musickitloaded', async () => {
+  try {
+    await MusicKit.configure({ developerToken: '__DEV_TOKEN__', app: { name: 'rocola', build: '1' } });
+    const btn = document.getElementById('go');
+    btn.hidden = false;
+    msg('Click the button to sign in. rocola only gets permission to create playlists for you.');
+    btn.onclick = async () => {
+      try {
+        const userToken = await MusicKit.getInstance().authorize();
+        await fetch('/token', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ userToken }),
+        });
+        msg('Connected. You can close this tab and return to the terminal.');
+        btn.hidden = true;
+      } catch (e) { msg('Sign-in failed: ' + e + '. Close this tab and run rocola again.'); }
+    };
+  } catch (e) { msg('Apple rejected the app token: ' + e + '. Check team_id and key_id in ~/.config/rocola/config.toml.'); }
+});
+</script>

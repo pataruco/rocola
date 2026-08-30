@@ -2,8 +2,10 @@
 //! and playlist write.
 
 pub mod dev_token;
+pub mod user_token;
 
 pub use dev_token::mint_developer_token;
+pub use user_token::run_user_auth;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppleError {
