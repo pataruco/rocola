@@ -36,7 +36,7 @@ run:
 hurl-spotify:
     hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_playlist.hurl
 
-# Live Spotify refresh-grant check. WARNING: each run rotates the stored refresh token — re-mint afterwards (cargo run -p rocola-spotify --example mint -- <client id>).
+# Live Spotify refresh-grant check (verified: Spotify does not rotate the refresh token on use).
 hurl-spotify-auth:
     hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_refresh.hurl
 

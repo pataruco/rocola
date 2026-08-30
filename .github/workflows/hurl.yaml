@@ -1,0 +1,57 @@
+name: Live API checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hurl-spotify:
+    name: Spotify live checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Install hurl
+        run: |
+          curl -sSLo /tmp/hurl.deb \
+            https://github.com/Orange-OpenSource/hurl/releases/download/8.0.1/hurl_8.0.1_amd64.deb
+          sudo dpkg -i /tmp/hurl.deb
+          hurl --version
+
+      - name: Mint access token (refresh grant)
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+        run: |
+          response=$(curl -s https://accounts.spotify.com/api/token \
+            -d grant_type=refresh_token \
+            -d refresh_token="$SPOTIFY_REFRESH_TOKEN" \
+            -d client_id="$SPOTIFY_CLIENT_ID")
+          token=$(echo "$response" | jq -r '.access_token // empty')
+          if [ -z "$token" ]; then
+            echo "Refresh grant failed: $(echo "$response" | jq -c 'del(.access_token)')"
+            echo "Re-mint locally (cargo run -p rocola-spotify --example mint) and update the SPOTIFY_REFRESH_TOKEN repo secret."
+            exit 1
+          fi
+          echo "::add-mask::$token"
+          echo "SPOTIFY_ACCESS_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Run hurl checks
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          SPOTIFY_PLAYLIST_ID: ${{ secrets.SPOTIFY_PLAYLIST_ID }}
+        run: |
+          cat > tests/hurl/vars.env <<VARS
+          spotify_token=$SPOTIFY_ACCESS_TOKEN
+          spotify_refresh_token=$SPOTIFY_REFRESH_TOKEN
+          spotify_client_id=$SPOTIFY_CLIENT_ID
+          spotify_playlist_id=$SPOTIFY_PLAYLIST_ID
+          VARS
+          hurl --variables-file tests/hurl/vars.env --test \
+            tests/hurl/spotify_playlist.hurl tests/hurl/spotify_refresh.hurl
