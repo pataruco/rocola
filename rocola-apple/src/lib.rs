@@ -1,9 +1,12 @@
 //! Apple Music target: developer token, Music User Token, catalog resolve
 //! and playlist write.
 
+pub mod api_types;
+pub mod client;
 pub mod dev_token;
 pub mod user_token;
 
+pub use client::AppleClient;
 pub use dev_token::mint_developer_token;
 pub use user_token::run_user_auth;
 
