@@ -24,4 +24,10 @@ pub enum SpotifyError {
          (Discover Weekly, editorial playlists). Try a playlist made by a person."
     )]
     RestrictedPlaylist,
+    #[error(
+        "Spotify now only lets apps like rocola read playlists you own or collaborate on. \
+         Open the playlist in Spotify, use 'Add to other playlist' to copy it into one of \
+         yours, then run rocola on the copy."
+    )]
+    NotYourPlaylist,
 }

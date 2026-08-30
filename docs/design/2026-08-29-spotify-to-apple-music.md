@@ -268,7 +268,11 @@ scheduled task, not a vibe.
 5. **Rate limits** — Apple 429s; Spotify returns `Retry-After`. Backoff required.
 6. **Spotify editorial/algorithmic playlists** are hidden from new apps
    (Nov 2024) behind a plain 404. Can't be detected, only explained — see
-   content design.
+   content design. As of Spotify's Feb 2026 development-mode migration, this
+   is now the narrower case: apps can only read the contents of playlists the
+   signed-in user owns or collaborates on at all (a 403), so editorial
+   playlists remain blocked on top of that, and the app owner needs Spotify
+   Premium for dev-mode apps.
 7. **`.p8` is a one-time download** — say so loudly during setup.
 
 ## Milestones

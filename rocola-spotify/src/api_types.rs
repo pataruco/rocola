@@ -9,7 +9,7 @@ pub struct PlaylistPage {
 
 #[derive(Debug, Deserialize)]
 pub struct PageItem {
-    pub track: Option<ApiTrack>,
+    pub item: Option<ApiTrack>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -46,7 +46,7 @@ impl PlaylistPage {
     pub fn source_tracks(&self) -> Vec<SourceTrack> {
         self.items
             .iter()
-            .filter_map(|i| i.track.as_ref())
+            .filter_map(|i| i.item.as_ref())
             .filter(|t| !t.is_local)
             .map(|t| SourceTrack {
                 title: t.name.clone(),
