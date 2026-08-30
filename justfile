@@ -32,6 +32,18 @@ ci:
 run:
     cargo run -p rocola
 
-# Live network checks (never run in CI). Copy tests/hurl/vars.env.example to tests/hurl/vars.env and fill it in first.
+# Live read-only Spotify check (never run in CI). Needs tests/hurl/vars.env — see vars.env.example.
 hurl-spotify:
-    hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_playlist.hurl tests/hurl/spotify_refresh.hurl
+    hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_playlist.hurl
+
+# Live Spotify refresh-grant check. WARNING: each run rotates the stored refresh token — re-mint afterwards (cargo run -p rocola-spotify --example mint -- <client id>).
+hurl-spotify-auth:
+    hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_refresh.hurl
+
+# Decrypt tests/hurl/vars.sops.env -> vars.env (needs your GPG key)
+secrets-decrypt:
+    sops -d tests/hurl/vars.sops.env > tests/hurl/vars.env
+
+# Re-encrypt tests/hurl/vars.env -> vars.sops.env after editing credentials
+secrets-encrypt:
+    sops -e tests/hurl/vars.env > tests/hurl/vars.sops.env

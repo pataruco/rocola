@@ -16,8 +16,10 @@ struct PlaylistMeta {
 ///
 /// Returns [`SpotifyError::Auth`] when the token has expired,
 /// [`SpotifyError::RestrictedPlaylist`] when Spotify hides the playlist from
-/// apps like this one (it answers 404), and [`SpotifyError::Http`] for
-/// transport failures, rate limiting, and any other status.
+/// apps like this one (it answers 404), [`SpotifyError::NotYourPlaylist`] when
+/// the signed-in user neither owns nor collaborates on the playlist (it
+/// answers 403), and [`SpotifyError::Http`] for transport failures, rate
+/// limiting, and any other status.
 pub async fn fetch_playlist(
     access_token: &str,
     playlist: &PlaylistRef,
@@ -39,6 +41,7 @@ pub async fn fetch_playlist(
                     "your Spotify sign-in has expired. rocola will sign you in again on the next run."
                         .into(),
                 )),
+                403 => Err(SpotifyError::NotYourPlaylist),
                 404 => Err(SpotifyError::RestrictedPlaylist),
                 429 => {
                     // Spec risk 4: honour Retry-After once, then give up loudly.
@@ -68,7 +71,7 @@ pub async fn fetch_playlist(
 
     let mut tracks = Vec::new();
     let mut next = Some(format!(
-        "https://api.spotify.com/v1/playlists/{}/tracks?limit=100&fields=next,items(is_local,track(name,duration_ms,is_local,album(name),artists(name),external_ids))",
+        "https://api.spotify.com/v1/playlists/{}/items?limit=100&fields=next,items(is_local,item(name,duration_ms,is_local,album(name),artists(name),external_ids))",
         playlist.0
     ));
     while let Some(url) = next {

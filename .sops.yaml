@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: tests/hurl/.*\.env$
+    pgp: 8745589185EB578EF641A7C40C7E9C9F43BC213E

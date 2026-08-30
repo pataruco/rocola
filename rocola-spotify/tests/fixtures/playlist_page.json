@@ -1,9 +1,9 @@
 {
-  "next": "https://api.spotify.com/v1/playlists/xyz/tracks?offset=100&limit=100",
+  "next": "https://api.spotify.com/v1/playlists/xyz/items?offset=100&limit=100",
   "items": [
     {
       "is_local": false,
-      "track": {
+      "item": {
         "name": "Umbrella",
         "duration_ms": 275000,
         "album": { "name": "Good Girl Gone Bad" },
@@ -12,10 +12,10 @@
         "is_local": false
       }
     },
-    { "is_local": false, "track": null },
+    { "is_local": false, "item": null },
     {
       "is_local": true,
-      "track": {
+      "item": {
         "name": "Home Recording",
         "duration_ms": 100000,
         "album": { "name": "" },
