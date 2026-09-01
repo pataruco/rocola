@@ -12,6 +12,7 @@ workspace = true
 rocola-core = { path = "../rocola-core", version = "0.0.0" }
 rocola-spotify = { path = "../rocola-spotify", version = "0.0.0" }
 rocola-apple = { path = "../rocola-apple", version = "0.0.0" }
+anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 toml = "1"

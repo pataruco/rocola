@@ -1,4 +1,4 @@
-use rocola_apple::api_types::{SearchResponse, SongsResponse};
+use rocola_apple::api_types::{LibraryPlaylists, SearchResponse, SongsResponse};
 use rocola_core::MatchedBy;
 
 #[test]
@@ -23,4 +23,11 @@ fn search_response_maps_to_search_candidates() {
     assert_eq!(cs.len(), 1);
     assert_eq!(cs[0].catalog_id, "1440783625");
     assert_eq!(cs[0].matched_by, MatchedBy::Search);
+}
+
+#[test]
+fn library_playlists_expose_names() {
+    let r: LibraryPlaylists =
+        serde_json::from_str(include_str!("fixtures/library_playlists.json")).unwrap();
+    assert_eq!(r.names(), vec!["Roadtrip".to_string()]);
 }

@@ -1,8 +1,5 @@
 use rocola_core::{Confidence, TrackMatch};
 
-// Not yet wired into `main` — the TUI event loop (Task 14) is the only
-// caller that will construct Up/Down/AcceptAllHigh from real key events.
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Key {
     Up,
@@ -33,8 +30,6 @@ pub enum Screen {
         items: Vec<ReviewItem>,
         cursor: usize,
     },
-    // Read by Task 14's confirm-screen rendering, not by this reducer.
-    #[allow(dead_code)]
     Confirm {
         playlist_name: String,
         accepted: usize,
@@ -45,9 +40,6 @@ pub enum Screen {
     Aborted,
 }
 
-// Not yet wired into `main` — the TUI event loop that drives this reducer
-// lands in Task 14.
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct App {
     pub screen: Screen,
@@ -59,8 +51,6 @@ pub struct App {
     pub decided: Vec<ReviewItem>,
 }
 
-// See `App`: unused until Task 14's event loop constructs and drives one.
-#[allow(dead_code)]
 impl App {
     pub fn from_matches(playlist_name: String, matches: Vec<TrackMatch>) -> Self {
         let mut auto_accepted = Vec::new();

@@ -3,17 +3,12 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-// Not yet wired into `main` — the CLI setup flow that constructs and reads
-// this lands in a later task.
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub spotify: SpotifyConfig,
     pub apple: AppleConfig,
 }
 
-// See `Config`: unused until the setup flow (a later task) constructs one.
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpotifyConfig {
     pub client_id: String,
@@ -21,8 +16,6 @@ pub struct SpotifyConfig {
     pub refresh_token: Option<String>,
 }
 
-// See `Config`: unused until the setup flow (a later task) constructs one.
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppleConfig {
     pub team_id: String,
@@ -34,8 +27,6 @@ pub struct AppleConfig {
     pub storefront: Option<String>,
 }
 
-// See `Config`: unused until the setup flow (a later task) surfaces these.
-#[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
 pub enum ConfigError {
     #[error("couldn't read {path}: {source}. Fix or delete the file and run rocola again.")]
@@ -60,8 +51,6 @@ pub enum ConfigError {
     },
 }
 
-// See `Config`: unused until the setup flow (a later task) calls these.
-#[allow(dead_code)]
 impl Config {
     #[must_use]
     pub fn default_path() -> PathBuf {

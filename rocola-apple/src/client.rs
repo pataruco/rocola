@@ -215,6 +215,27 @@ impl AppleClient {
             .ok_or_else(|| AppleError::Http("Apple created the playlist but sent no id".into()))
     }
 
+    /// The names of the playlists already in the listener's library.
+    ///
+    /// One page of 100 is enough for the duplicate-run guard: a name past
+    /// that is treated as absent, which costs a suffixed playlist, never a
+    /// wrong write.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`AppleError::Auth`] when Apple rejects the tokens, and
+    /// [`AppleError::Http`] for transport failures, rate limiting, any other
+    /// status, and unreadable JSON.
+    pub async fn list_playlist_names(&self) -> Result<Vec<String>, AppleError> {
+        let r: crate::api_types::LibraryPlaylists = self
+            .send(|| self.request(reqwest::Method::GET, "/v1/me/library/playlists?limit=100"))
+            .await?
+            .json()
+            .await
+            .map_err(|e| AppleError::Http(e.to_string()))?;
+        Ok(r.names())
+    }
+
     /// Append catalog songs to a library playlist.
     ///
     /// # Errors
