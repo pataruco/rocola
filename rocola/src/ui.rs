@@ -15,6 +15,16 @@ use crate::app::{App, Decision, ReviewItem, Screen};
 /// within three seconds is not a different length, it is the same length.
 const DURATION_WINDOW_MS: u32 = 3_000;
 
+/// `"1 song"` / `"4 songs"` — a count in a sentence has to read as English.
+#[must_use]
+pub fn songs(n: usize) -> String {
+    if n == 1 {
+        "1 song".to_owned()
+    } else {
+        format!("{n} songs")
+    }
+}
+
 /// Draw the current screen into `frame`.
 pub fn draw(frame: &mut Frame, app: &App) {
     match &app.screen {
@@ -26,15 +36,18 @@ pub fn draw(frame: &mut Frame, app: &App) {
             not_found,
         } => {
             let body = format!(
-                "Create Apple Music playlist \"{playlist_name}\" with {accepted} songs?\n\
+                "Create Apple Music playlist \"{playlist_name}\" with {n}?\n\
                  {skipped} skipped by you · {not_found} not found on Apple Music (all listed after creation)\n\
                  \n\
-                 enter create · q abort"
+                 enter create · q abort",
+                n = songs(*accepted)
             );
             frame.render_widget(Paragraph::new(body), frame.area());
         }
         Screen::Done => {
-            let done = Paragraph::new("Done — see the report above.");
+            // The real report prints to the normal terminal once this screen
+            // closes, so this line says what happens next, not where to look.
+            let done = Paragraph::new("Creating your playlist on Apple Music…");
             frame.render_widget(done, frame.area());
         }
         Screen::Aborted => {
@@ -257,7 +270,7 @@ mod tests {
     fn no_ambiguous_tracks_renders_the_confirm_question() {
         let screen = render(vec![track("Umbrella", Confidence::Exact)]);
         assert!(
-            screen.contains("Create Apple Music playlist \"Mix\" with 1 songs?"),
+            screen.contains("Create Apple Music playlist \"Mix\" with 1 song?"),
             "{screen}"
         );
         assert!(screen.contains("enter create · q abort"), "{screen}");

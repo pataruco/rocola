@@ -11,13 +11,16 @@ use ratatui::backend::CrosstermBackend;
 use rocola_apple::client::AppleClient;
 use rocola_apple::{AppleError, AppleTarget, mint_developer_token, run_user_auth};
 use rocola_core::{Candidate, MusicTarget, SourceTrack, TrackMatch, match_tracks};
-use rocola_spotify::{fetch_playlist, parse_playlist_url, refresh, run_auth_flow};
+use rocola_spotify::{Playlist, fetch_playlist, parse_playlist_url, refresh, run_auth_flow};
 
 use crate::app::{App, Decision, Key, Screen};
 use crate::config::Config;
 use crate::{setup, ui};
 
 const PLAYLIST_DESCRIPTION: &str = "Recreated from Spotify by rocola";
+
+/// Heading for the tracks Spotify has, but Apple Music never can.
+const UNMATCHABLE_HEADING: &str = "Local files and removed tracks:";
 
 /// Recreate the playlist at `url` on Apple Music.
 ///
@@ -36,11 +39,21 @@ pub async fn run(url: &str) -> anyhow::Result<()> {
     // say so straight away, not after a trip through the browser.
     let playlist = parse_playlist_url(url)?;
     let access_token = spotify_token(&mut config, &config_path).await?;
-    let (playlist_name, tracks) = fetch_playlist(&access_token, &playlist).await?;
+    let Playlist {
+        name: playlist_name,
+        tracks,
+        skipped: unmatchable,
+    } = fetch_playlist(&access_token, &playlist).await?;
     println!(
-        "Read \"{playlist_name}\" — {n} songs from Spotify.",
-        n = tracks.len()
+        "Read \"{playlist_name}\" — {n} from Spotify.",
+        n = ui::songs(tracks.len() + unmatchable.len())
     );
+    if !unmatchable.is_empty() {
+        println!(
+            "Leaving out {n} — local files and tracks Spotify has removed aren't in Apple Music's catalogue. They're named at the end.",
+            n = ui::songs(unmatchable.len())
+        );
+    }
 
     let developer_token = apple_developer_token(&config, &config_path)?;
     // A stored Music User Token can have expired since the last run. The
@@ -98,7 +111,7 @@ pub async fn run(url: &str) -> anyhow::Result<()> {
         config_path: &config_path,
         retry_available: true,
     };
-    write_playlist(&mut session, &app).await
+    write_playlist(&mut session, &app, &unmatchable).await
 }
 
 /// A fresh access token, and a refresh token in the config for next time.
@@ -351,7 +364,11 @@ fn orphaned(name: &str, e: &impl std::fmt::Display) -> anyhow::Error {
 
 /// Create the playlist, add the accepted songs, and account for every track
 /// that didn't make it.
-async fn write_playlist(session: &mut WriteSession<'_>, app: &App) -> anyhow::Result<()> {
+async fn write_playlist(
+    session: &mut WriteSession<'_>,
+    app: &App,
+    unmatchable: &[String],
+) -> anyhow::Result<()> {
     let Some(name) = playlist_name(session, &app.playlist_name).await? else {
         println!("Nothing was created.");
         return Ok(());
@@ -365,8 +382,8 @@ async fn write_playlist(session: &mut WriteSession<'_>, app: &App) -> anyhow::Re
             .await?;
     }
     println!(
-        "Created \"{name}\" — {n} songs added.",
-        n = catalog_ids.len()
+        "Created \"{name}\" — {n} added.",
+        n = ui::songs(catalog_ids.len())
     );
 
     report(
@@ -374,9 +391,13 @@ async fn write_playlist(session: &mut WriteSession<'_>, app: &App) -> anyhow::Re
         app.decided
             .iter()
             .filter(|item| matches!(item.decision, Decision::Skipped))
-            .map(|item| &item.track),
+            .map(|item| track_line(&item.track)),
     );
-    report("Not found on Apple Music:", app.not_found.iter());
+    report(
+        "Not found on Apple Music:",
+        app.not_found.iter().map(track_line),
+    );
+    report(UNMATCHABLE_HEADING, unmatchable.iter().cloned());
     Ok(())
 }
 
@@ -395,7 +416,7 @@ async fn playlist_name(
         return Ok(Some(wanted.to_owned()));
     }
     print!(
-        "You already have an Apple Music playlist called \"{wanted}\". [a]dd these songs to it is not supported yet — create \"{wanted} (rocola)\" instead? [y/N] "
+        "You already have an Apple Music playlist called \"{wanted}\". rocola can't add songs to a playlist that already exists. Create \"{wanted} (rocola)\" instead? [y/N] "
     );
     std::io::stdout().flush()?;
     let mut answer = String::new();
@@ -406,26 +427,49 @@ async fn playlist_name(
         .then(|| format!("{wanted} (rocola)")))
 }
 
-/// One heading and one line per track — the spec's rule that nothing is ever
-/// dropped silently.
-fn report<'a>(heading: &str, tracks: impl Iterator<Item = &'a TrackMatch>) {
-    let mut tracks = tracks.peekable();
-    if tracks.peek().is_none() {
+/// One heading and one line per entry — the spec's rule that nothing is ever
+/// dropped silently. A heading with nothing under it prints nothing at all.
+fn report(heading: &str, lines: impl Iterator<Item = String>) {
+    let mut lines = lines.peekable();
+    if lines.peek().is_none() {
         return;
     }
     println!("{heading}");
-    for track in tracks {
-        println!(
-            "  {title} — {artists}",
-            title = track.source.title,
-            artists = track.source.artists.join(", ")
-        );
+    for line in lines {
+        println!("  {line}");
     }
+}
+
+/// `"Title — Artist, Artist"`, the same shape rocola-spotify gives the items
+/// it couldn't turn into tracks, so every report section reads alike.
+fn track_line(track: &TrackMatch) -> String {
+    format!(
+        "{title} — {artists}",
+        title = track.source.title,
+        artists = track.source.artists.join(", ")
+    )
 }
 
 #[cfg(test)]
 mod tests {
-    use super::orphaned;
+    use super::{orphaned, track_line};
+    use rocola_core::{Confidence, SourceTrack, TrackMatch};
+
+    #[test]
+    fn a_report_line_names_the_track_and_every_artist() {
+        let track = TrackMatch {
+            source: SourceTrack {
+                title: "Under Pressure".into(),
+                artists: vec!["Queen".into(), "David Bowie".into()],
+                album: "Hot Space".into(),
+                duration_ms: 248_000,
+                isrc: None,
+            },
+            candidates: Vec::new(),
+            confidence: Confidence::NotFound,
+        };
+        assert_eq!(track_line(&track), "Under Pressure — Queen, David Bowie");
+    }
 
     #[test]
     fn an_empty_playlist_says_so_and_says_what_to_do() {

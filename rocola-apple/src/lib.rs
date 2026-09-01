@@ -18,8 +18,13 @@ pub enum AppleError {
     BadKey(String),
     #[error("Apple Music request failed: {0}. Check your connection and try again.")]
     Http(String),
+    #[error("Apple Music is asking rocola to slow down. Wait a minute, then run rocola again.")]
+    RateLimited,
     #[error("Apple Music sign-in problem: {0}")]
     Auth(String),
-    #[error("this song isn't available in your country's Apple Music catalog")]
+    #[error(
+        "Apple Music didn't say which country's catalogue to search. Check your Apple Music \
+         subscription is active, then run rocola again."
+    )]
     NotInStorefront,
 }

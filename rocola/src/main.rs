@@ -10,7 +10,10 @@ use std::process::ExitCode;
 async fn main() -> ExitCode {
     let Some(url) = std::env::args().nth(1) else {
         eprintln!("Usage: rocola <spotify playlist url>");
-        eprintln!("Example: rocola https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M");
+        eprintln!("Example: rocola https://open.spotify.com/playlist/<id>");
+        eprintln!(
+            "It has to be a playlist you own or collaborate on. In Spotify: Share → Copy link to playlist."
+        );
         return ExitCode::from(2);
     };
     match run::run(&url).await {

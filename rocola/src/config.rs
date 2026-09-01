@@ -44,7 +44,9 @@ pub enum ConfigError {
         message: String,
         source: Box<toml::de::Error>,
     },
-    #[error("couldn't write {path}: {source}")]
+    #[error(
+        "couldn't write {path}: {source}. Check you can write to that folder, then run rocola again."
+    )]
     Unwritable {
         path: String,
         source: std::io::Error,
