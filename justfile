@@ -32,7 +32,7 @@ ci:
 run *args:
     cargo run -p rocola -- {{args}}
 
-# Live read-only Spotify check (never run in CI). Needs tests/hurl/vars.env — see vars.env.example.
+# Live read-only Spotify check. Needs tests/hurl/vars.env — see vars.env.example. CI runs this one from repo secrets, so it shows red on fork pull requests; `just ci` needs no credentials.
 hurl-spotify:
     hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_playlist.hurl
 
@@ -40,7 +40,7 @@ hurl-spotify:
 hurl-spotify-auth:
     hurl --variables-file tests/hurl/vars.env --test tests/hurl/spotify_refresh.hurl
 
-# Live Apple Music checks. Needs apple_dev_token/apple_user_token/apple_storefront in tests/hurl/vars.env.
+# Live Apple Music checks — local only, never in CI. Needs apple_dev_token/apple_user_token/apple_storefront in tests/hurl/vars.env.
 hurl-apple:
     hurl --variables-file tests/hurl/vars.env --test tests/hurl/apple_storefront.hurl tests/hurl/apple_isrc.hurl tests/hurl/apple_search.hurl
 

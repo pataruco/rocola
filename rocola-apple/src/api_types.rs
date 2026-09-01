@@ -1,6 +1,7 @@
 //! Wire shapes for the Apple Music catalog responses rocola reads, and the
 //! mapping from those shapes onto rocola-core's [`Candidate`].
 
+use rocola_core::normalize::normalize_isrc;
 use rocola_core::{Candidate, MatchedBy};
 use serde::Deserialize;
 
@@ -53,13 +54,15 @@ impl SongsResponse {
     /// Pair every song that carries an ISRC with its candidate.
     ///
     /// Songs without an ISRC are dropped: the caller keys results by ISRC, so
-    /// there is nothing to key them on.
+    /// there is nothing to key them on. The key is normalised, because the
+    /// source ISRCs it is joined against are — an ISRC Apple sends in another
+    /// shape would otherwise never meet its track.
     #[must_use]
     pub fn into_isrc_candidates(self) -> Vec<(String, Candidate)> {
         self.data
             .into_iter()
             .filter_map(|song| {
-                let isrc = song.attributes.isrc.clone()?;
+                let isrc = song.attributes.isrc.as_deref().and_then(normalize_isrc)?;
                 Some((isrc, to_candidate(song, MatchedBy::Isrc)))
             })
             .collect()

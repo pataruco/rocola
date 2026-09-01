@@ -7,7 +7,7 @@ pub mod dev_token;
 pub mod target;
 pub mod user_token;
 
-pub use client::AppleClient;
+pub use client::{AddFailure, AppleClient};
 pub use dev_token::mint_developer_token;
 pub use target::AppleTarget;
 pub use user_token::run_user_auth;

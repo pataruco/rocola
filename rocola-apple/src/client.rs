@@ -14,6 +14,10 @@ const BASE: &str = "https://api.music.apple.com";
 /// Apple accepts at most 25 comma-separated values in `filter[isrc]`.
 pub const ISRC_BATCH: usize = 25;
 
+/// Apple accepts at most 100 songs in one add-to-playlist request. A longer
+/// playlist is added in several, in order.
+pub const ADD_CHUNK: usize = 100;
+
 /// Fallback wait when Apple rate-limits without a usable `Retry-After`.
 const DEFAULT_RETRY_AFTER_SECS: u64 = 3;
 
@@ -21,6 +25,18 @@ pub struct AppleClient {
     http: reqwest::Client,
     developer_token: String,
     user_token: String,
+}
+
+/// A refused add, and how much of the playlist Apple already took.
+///
+/// The caller needs both: the count to tell the listener what is actually in
+/// the playlist, the error to say why the rest isn't. Resuming from the count
+/// is also the only way to retry without adding anything twice.
+#[derive(Debug)]
+pub struct AddFailure {
+    /// Songs Apple accepted before the batch that failed.
+    pub added: usize,
+    pub error: AppleError,
 }
 
 /// What one HTTP attempt produced: a usable response, or a rate-limit with the
@@ -82,8 +98,13 @@ impl AppleClient {
                     .unwrap_or(DEFAULT_RETRY_AFTER_SECS);
                 Ok(Attempt::RateLimited(wait))
             }
+            // Apple answers 401/403 both for a Music User Token it has stopped
+            // accepting and for a developer token signed with the wrong team
+            // or key, so the copy has to cover both.
             401 | 403 => Err(AppleError::Auth(
-                "Apple Music rejected the sign-in. Run rocola again to reconnect.".into(),
+                "Apple Music rejected the request. If this keeps happening after signing in \
+                 again, check team_id and key_id in ~/.config/rocola/config.toml."
+                    .into(),
             )),
             _ if status.is_success() => Ok(Attempt::Response(response)),
             s => Err(AppleError::Http(format!("Apple Music answered {s}"))),
@@ -239,25 +260,35 @@ impl AppleClient {
         Ok(r.names())
     }
 
-    /// Append catalog songs to a library playlist.
+    /// Append catalog songs to a library playlist, [`ADD_CHUNK`] at a time and
+    /// in order, stopping at the first batch Apple refuses.
     ///
     /// # Errors
     ///
-    /// Returns [`AppleError::Auth`] when Apple rejects the tokens,
-    /// [`AppleError::RateLimited`] when Apple is still rate-limiting after one
-    /// retry, and [`AppleError::Http`] for transport failures and any other
-    /// status.
+    /// Returns [`AddFailure`], carrying how many songs Apple had already
+    /// accepted and why it refused the next batch: [`AppleError::Auth`] when
+    /// Apple rejects the tokens, [`AppleError::RateLimited`] when Apple is
+    /// still rate-limiting after one retry, and [`AppleError::Http`] for
+    /// transport failures and any other status.
     pub async fn add_tracks(
         &self,
         playlist_id: &str,
         catalog_ids: &[String],
-    ) -> Result<(), AppleError> {
-        let body = json!({
-            "data": catalog_ids.iter().map(|id| json!({ "id": id, "type": "songs" })).collect::<Vec<_>>()
-        });
+    ) -> Result<(), AddFailure> {
         let path = format!("/v1/me/library/playlists/{playlist_id}/tracks");
-        self.send(|| self.request(reqwest::Method::POST, &path).json(&body))
-            .await?;
+        let mut added = 0;
+        for chunk in catalog_ids.chunks(ADD_CHUNK) {
+            let body = json!({
+                "data": chunk.iter().map(|id| json!({ "id": id, "type": "songs" })).collect::<Vec<_>>()
+            });
+            if let Err(error) = self
+                .send(|| self.request(reqwest::Method::POST, &path).json(&body))
+                .await
+            {
+                return Err(AddFailure { added, error });
+            }
+            added += chunk.len();
+        }
         Ok(())
     }
 }
@@ -276,11 +307,21 @@ fn url_encode(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::url_encode;
+    use super::{ADD_CHUNK, url_encode};
 
     #[test]
     fn encodes_spaces_and_unicode() {
         assert_eq!(url_encode("a b"), "a%20b");
         assert_eq!(url_encode("café"), "caf%C3%A9");
+    }
+
+    #[test]
+    fn a_long_playlist_is_added_in_batches_of_a_hundred() {
+        let ids: Vec<String> = (0..250).map(|i| i.to_string()).collect();
+        let batches: Vec<usize> = ids.chunks(ADD_CHUNK).map(<[String]>::len).collect();
+        assert_eq!(batches, vec![100, 100, 50]);
+        // Exactly 100 is one request, not two — an empty second POST would be
+        // a request Apple has no reason to accept.
+        assert_eq!(ids[..100].chunks(ADD_CHUNK).count(), 1);
     }
 }

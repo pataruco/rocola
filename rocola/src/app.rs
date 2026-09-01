@@ -6,7 +6,6 @@ pub enum Key {
     Down,
     Digit(u8),
     Skip,
-    AcceptAllHigh,
     Confirm,
     Abort,
 }
@@ -111,7 +110,6 @@ impl App {
                     // Confirm press always lands on (or stays on) Review
                     // before Confirm can advance it in the same call.
                     Key::Confirm => self.advance_if_review_done(),
-                    Key::AcceptAllHigh => {}
                     Key::Abort => unreachable!("handled above"),
                 }
             }
