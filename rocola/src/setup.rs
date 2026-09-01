@@ -10,9 +10,9 @@ use std::path::PathBuf;
 
 use crate::config::{AppleConfig, Config, SpotifyConfig};
 
-const SPOTIFY_PROMPT: &str = "rocola needs a Spotify app of your own (free, ~2 minutes).\n  1. Open https://developer.spotify.com/dashboard and create an app.\n  2. Add this exact Redirect URI: http://127.0.0.1:8888/callback\n  3. Paste the app's Client ID here: ";
-const TEAM_ID_PROMPT: &str = "Now your Apple pieces (needs a paid Apple Developer membership):\n  Team ID (developer.apple.com → Membership): ";
-const KEY_ID_PROMPT: &str = "Key ID of your MusicKit key: ";
+const SPOTIFY_PROMPT: &str = "rocola needs a Spotify app of your own. It is free and takes about 2 minutes. Your Spotify account needs Premium.\n  1. Open https://developer.spotify.com/dashboard and create an app.\n  2. Add this exact Redirect URI: http://127.0.0.1:8888/callback\n  3. Paste the app's Client ID here: ";
+const TEAM_ID_PROMPT: &str = "Now your Apple details. These need a paid Apple Developer membership.\n  Team ID (developer.apple.com → Membership): ";
+const KEY_ID_PROMPT: &str = "Key ID of your MusicKit key (developer.apple.com → Keys): ";
 const P8_PROMPT: &str =
     "Path to your AuthKey_….p8 file (Apple lets you download it only once — keep it safe): ";
 const GIT_WARNING: &str = "Warning: your .p8 key is inside a git repository. Move it somewhere private — anyone who can read that repo can impersonate your Apple developer account.";

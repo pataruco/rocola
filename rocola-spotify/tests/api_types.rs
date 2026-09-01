@@ -1,16 +1,28 @@
 use rocola_spotify::api_types::PlaylistPage;
 
 #[test]
-fn maps_page_to_source_tracks_skipping_null_and_local() {
+fn splits_a_page_into_tracks_and_named_leftovers() {
     let page: PlaylistPage =
         serde_json::from_str(include_str!("fixtures/playlist_page.json")).unwrap();
-    let tracks = page.source_tracks();
-    assert_eq!(tracks.len(), 1);
-    assert_eq!(tracks[0].title, "Umbrella");
+    let split = page.partition();
+
+    assert_eq!(split.tracks.len(), 1);
+    assert_eq!(split.tracks[0].title, "Umbrella");
     assert_eq!(
-        tracks[0].artists,
+        split.tracks[0].artists,
         vec!["Rihanna".to_string(), "JAY-Z".to_string()]
     );
-    assert_eq!(tracks[0].isrc.as_deref(), Some("USUM70701234"));
+    assert_eq!(split.tracks[0].isrc.as_deref(), Some("USUM70701234"));
+
+    // The page also holds one removed (null) track and one local file. Both
+    // must survive as named lines, in playlist order — never dropped.
+    assert_eq!(
+        split.skipped,
+        vec![
+            "(removed track)".to_string(),
+            "Home Recording — Me".to_string()
+        ]
+    );
+
     assert!(page.next.is_some());
 }

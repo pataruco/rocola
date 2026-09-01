@@ -71,10 +71,11 @@ async fn wait_for_callback(
     use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};
 
     loop {
-        let (mut stream, _) = listener
-            .accept()
-            .await
-            .map_err(|e| SpotifyError::Auth(format!("couldn't accept the browser's reply: {e}")))?;
+        let (mut stream, _) = listener.accept().await.map_err(|e| {
+            SpotifyError::Auth(format!(
+                "couldn't accept the browser's reply: {e}. Run rocola again to retry."
+            ))
+        })?;
         let mut buf = vec![0u8; 8192];
         let request = match stream.read(&mut buf).await {
             Ok(n) => String::from_utf8_lossy(&buf[..n]).into_owned(),

@@ -93,5 +93,297 @@
       { "catalog_id": "11", "title": "Someone Like You", "artists": ["Adele"], "album": "21", "duration_ms": 240000, "matched_by": "Search" }
     ],
     "expected": "Ambiguous"
+  },
+  {
+    "name": "japanese title, romanised artist billing",
+    "source": { "title": "上を向いて歩こう", "artists": ["坂本九"], "album": "SUKIYAKI", "duration_ms": 187000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "13", "title": "上を向いて歩こう", "artists": ["Kyu Sakamoto"], "album": "Sukiyaki", "duration_ms": 187000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "cyrillic exact match",
+    "source": { "title": "Группа крови", "artists": ["Кино"], "album": "Группа крови", "duration_ms": 285000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "14", "title": "Группа крови", "artists": ["Кино"], "album": "Группа крови", "duration_ms": 286000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "cyrillic title vs transliterated candidate",
+    "source": { "title": "Кукушка", "artists": ["Кино"], "album": "Звезда по имени Солнце", "duration_ms": 285000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "15", "title": "Kukushka", "artists": ["Kino"], "album": "Zvezda po imeni Solntse", "duration_ms": 285000, "matched_by": "Search" }
+    ],
+    "expected": "NotFound"
+  },
+  {
+    "name": "arabic title, latin artist billing",
+    "source": { "title": "ألف ليلة وليلة", "artists": ["أم كلثوم"], "album": "ألف ليلة وليلة", "duration_ms": 2700000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "16", "title": "ألف ليلة وليلة", "artists": ["Umm Kulthum"], "album": "Alf Leila Wa Leila", "duration_ms": 2705000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "korean title with a bracketed english subtitle",
+    "source": { "title": "봄날", "artists": ["방탄소년단"], "album": "You Never Walk Alone", "duration_ms": 274000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "17", "title": "봄날 (Spring Day)", "artists": ["BTS"], "album": "You Never Walk Alone", "duration_ms": 274000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "classical work billed by composer, candidate by performer",
+    "source": { "title": "Symphony No. 5 in C Minor, Op. 67: I. Allegro con brio", "artists": ["Ludwig van Beethoven"], "album": "Beethoven: Symphonies", "duration_ms": 425000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "18", "title": "Symphony No. 5 in C Minor, Op. 67: I. Allegro con brio", "artists": ["Berlin Philharmonic", "Herbert von Karajan"], "album": "Beethoven: The 9 Symphonies", "duration_ms": 428000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "classical: shared performer, different recording length",
+    "source": { "title": "Nocturne No. 2 in E-Flat Major, Op. 9 No. 2", "artists": ["Frédéric Chopin", "Arthur Rubinstein"], "album": "Chopin: Nocturnes", "duration_ms": 271000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "19", "title": "Nocturne No. 2 in E-Flat Major, Op. 9 No. 2", "artists": ["Arthur Rubinstein"], "album": "Chopin: Nocturnes", "duration_ms": 289000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "film cue with a from-the-film suffix",
+    "source": { "title": "Duel of the Fates - From \"Star Wars: Episode I\"", "artists": ["John Williams"], "album": "Star Wars: The Phantom Menace", "duration_ms": 254000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "20", "title": "Duel of the Fates", "artists": ["John Williams"], "album": "Star Wars: Episode I - The Phantom Menace (Original Motion Picture Soundtrack)", "duration_ms": 255000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "musical, different cast recording",
+    "source": { "title": "Defying Gravity", "artists": ["Idina Menzel", "Kristin Chenoweth"], "album": "Wicked (Original Broadway Cast Recording)", "duration_ms": 476000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "21", "title": "Defying Gravity", "artists": ["Cynthia Erivo", "Ariana Grande"], "album": "Wicked: The Soundtrack", "duration_ms": 470000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "sacred standard, unrelated artist",
+    "source": { "title": "Ave Maria", "artists": ["Franz Schubert", "Luciano Pavarotti"], "album": "Sacred Arias", "duration_ms": 340000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "22", "title": "Ave Maria", "artists": ["Beyoncé"], "album": "B'Day", "duration_ms": 226000, "matched_by": "Search" }
+    ],
+    "expected": "NotFound"
+  },
+  {
+    "name": "cover by a different artist",
+    "source": { "title": "Hurt", "artists": ["Nine Inch Nails"], "album": "The Downward Spiral", "duration_ms": 373000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "23", "title": "Hurt", "artists": ["Johnny Cash"], "album": "American IV: The Man Comes Around", "duration_ms": 218000, "matched_by": "Search" }
+    ],
+    "expected": "NotFound"
+  },
+  {
+    "name": "karaoke version",
+    "source": { "title": "Rolling in the Deep", "artists": ["Adele"], "album": "21", "duration_ms": 228000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "24", "title": "Rolling in the Deep (Karaoke Version)", "artists": ["Karaoke Hits Band"], "album": "Karaoke Chart Hits", "duration_ms": 228000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "cover at exactly the ten-second duration edge",
+    "source": { "title": "Wonderwall", "artists": ["Oasis"], "album": "(What's the Story) Morning Glory?", "duration_ms": 258000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "25", "title": "Wonderwall", "artists": ["Ryan Adams"], "album": "Love Is Hell", "duration_ms": 268000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "acoustic version by the same artist",
+    "source": { "title": "Chasing Cars", "artists": ["Snow Patrol"], "album": "Eyes Open", "duration_ms": 267000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "26", "title": "Chasing Cars - Acoustic", "artists": ["Snow Patrol"], "album": "Eyes Open", "duration_ms": 262000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "demo take with a large duration gap",
+    "source": { "title": "Yellow", "artists": ["Coldplay"], "album": "Parachutes", "duration_ms": 266000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "27", "title": "Yellow - Demo", "artists": ["Coldplay"], "album": "Parachutes (20th Anniversary Edition)", "duration_ms": 199000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "live version, artist name in capitals",
+    "source": { "title": "Under Pressure", "artists": ["Queen", "David Bowie"], "album": "Hot Space", "duration_ms": 248000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "28", "title": "Under Pressure - Live", "artists": ["QUEEN", "David Bowie"], "album": "Queen Rock Montreal", "duration_ms": 253000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "single version much shorter than the album version",
+    "source": { "title": "Marquee Moon", "artists": ["Television"], "album": "Marquee Moon", "duration_ms": 589000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "29", "title": "Marquee Moon - Single Version", "artists": ["Television"], "album": "Marquee Moon", "duration_ms": 289000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "extended mix with a year in the title",
+    "source": { "title": "Blue Monday", "artists": ["New Order"], "album": "Substance", "duration_ms": 448000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "30", "title": "Blue Monday '88 (Extended Mix)", "artists": ["New Order"], "album": "Substance 1987", "duration_ms": 450000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "collab source, lead-artist billing on the target",
+    "source": { "title": "Empire State of Mind", "artists": ["JAY-Z", "Alicia Keys"], "album": "The Blueprint 3", "duration_ms": 276000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "31", "title": "Empire State of Mind (feat. Alicia Keys)", "artists": ["JAY-Z"], "album": "The Blueprint 3", "duration_ms": 276000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "three-way collab, soundtrack album in brackets",
+    "source": { "title": "Don't Call Me Angel", "artists": ["Ariana Grande", "Miley Cyrus", "Lana Del Rey"], "album": "Charlie's Angels (Original Motion Picture Soundtrack)", "duration_ms": 189000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "32", "title": "Don't Call Me Angel", "artists": ["Ariana Grande", "Miley Cyrus", "Lana Del Rey"], "album": "Charlie's Angels", "duration_ms": 189000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "duet where the target keeps only the lead artist",
+    "source": { "title": "Perfect Duet", "artists": ["Ed Sheeran", "Beyoncé"], "album": "÷", "duration_ms": 260000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "33", "title": "Perfect Duet", "artists": ["Ed Sheeran"], "album": "Perfect Duet", "duration_ms": 260000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "same title, no shared artist",
+    "source": { "title": "Stay", "artists": ["The Kid LAROI", "Justin Bieber"], "album": "F*CK LOVE 3: OVER YOU", "duration_ms": 141000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "34", "title": "Stay", "artists": ["Zedd", "Alessia Cara"], "album": "True Colors", "duration_ms": 210000, "matched_by": "Search" }
+    ],
+    "expected": "NotFound"
+  },
+  {
+    "name": "two of four artists shared",
+    "source": { "title": "Sunflower", "artists": ["Post Malone", "Swae Lee"], "album": "Spider-Man: Into the Spider-Verse", "duration_ms": 158000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "35", "title": "Sunflower - Spider-Man: Into the Spider-Verse", "artists": ["Post Malone", "Swae Lee", "Nicki Minaj", "Lil Wayne"], "album": "Hollywood's Bleeding", "duration_ms": 158000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "diacritics dropped on the target",
+    "source": { "title": "Bésame Mucho", "artists": ["Consuelo Velázquez"], "album": "Clásicos", "duration_ms": 168000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "36", "title": "Besame Mucho", "artists": ["Consuelo Velazquez"], "album": "Clasicos", "duration_ms": 168000, "matched_by": "Search" }
+    ],
+    "expected": "NotFound"
+  },
+  {
+    "name": "diacritics kept on both sides",
+    "source": { "title": "Ne Me Quitte Pas", "artists": ["Jacques Brel"], "album": "La Valse à Mille Temps", "duration_ms": 216000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "37", "title": "Ne Me Quitte Pas", "artists": ["Jacques Brel"], "album": "La Valse à Mille Temps", "duration_ms": 217000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "curly versus straight apostrophe",
+    "source": { "title": "Don't Stop Believin'", "artists": ["Journey"], "album": "Escape", "duration_ms": 250000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "38", "title": "Don’t Stop Believin’", "artists": ["Journey"], "album": "Escape", "duration_ms": 250000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "ampersand versus and in the artist billing",
+    "source": { "title": "Islands in the Stream", "artists": ["Kenny Rogers & Dolly Parton"], "album": "Eyes That See in the Dark", "duration_ms": 254000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "39", "title": "Islands in the Stream", "artists": ["Kenny Rogers and Dolly Parton"], "album": "Eyes That See in the Dark", "duration_ms": 254000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "artist name with stray whitespace",
+    "source": { "title": "Clandestino", "artists": ["  Manu Chao "], "album": "Clandestino", "duration_ms": 148000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "40", "title": "Clandestino", "artists": ["Manu Chao"], "album": "Clandestino", "duration_ms": 148000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "nine-second gap on a thirty-second skit",
+    "source": { "title": "Skit", "artists": ["De La Soul"], "album": "3 Feet High and Rising", "duration_ms": 30000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "41", "title": "Skit", "artists": ["De La Soul"], "album": "3 Feet High and Rising", "duration_ms": 39000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "two candidates for an intro, duration decides",
+    "source": { "title": "Intro", "artists": ["The xx"], "album": "xx", "duration_ms": 128000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "42a", "title": "Intro", "artists": ["The xx"], "album": "xx", "duration_ms": 128000, "matched_by": "Search" },
+      { "catalog_id": "42b", "title": "Intro", "artists": ["The xx"], "album": "Intro", "duration_ms": 121000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "short track, unrelated cover",
+    "source": { "title": "Her Majesty", "artists": ["The Beatles"], "album": "Abbey Road", "duration_ms": 26000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "43", "title": "Her Majesty", "artists": ["Booker T. & the M.G.'s"], "album": "McLemore Avenue", "duration_ms": 24000, "matched_by": "Search" }
+    ],
+    "expected": "Ambiguous"
+  },
+  {
+    "name": "isrc hit four seconds off is not exact",
+    "source": { "title": "Redemption Song", "artists": ["Bob Marley & The Wailers"], "album": "Uprising", "duration_ms": 227000, "isrc": "JMBM17800001" },
+    "candidates": [
+      { "catalog_id": "44", "title": "Redemption Song", "artists": ["Bob Marley & The Wailers"], "album": "Uprising", "duration_ms": 231000, "matched_by": "Isrc" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "isrc hit behind a better-scoring search decoy",
+    "source": { "title": "Hallelujah", "artists": ["Jeff Buckley"], "album": "Grace", "duration_ms": 409000, "isrc": "USSM19400001" },
+    "candidates": [
+      { "catalog_id": "45a", "title": "Lover, You Should've Come Over", "artists": ["Jeff Buckley"], "album": "Grace", "duration_ms": 410000, "matched_by": "Isrc" },
+      { "catalog_id": "45b", "title": "Hallelujah", "artists": ["Jeff Buckley"], "album": "Grace", "duration_ms": 405000, "matched_by": "Search" }
+    ],
+    "expected": "Exact"
+  },
+  {
+    "name": "no isrc anywhere, two search candidates",
+    "source": { "title": "Machine Gun", "artists": ["Portishead"], "album": "Third", "duration_ms": 293000, "isrc": null },
+    "candidates": [
+      { "catalog_id": "46a", "title": "Machine Gun", "artists": ["Portishead"], "album": "Third", "duration_ms": 294000, "matched_by": "Search" },
+      { "catalog_id": "46b", "title": "Machine Gun", "artists": ["Portishead"], "album": "Third - Live", "duration_ms": 300000, "matched_by": "Search" }
+    ],
+    "expected": "High"
+  },
+  {
+    "name": "two isrc hits, only the closer one qualifies",
+    "source": { "title": "Waterloo Sunset", "artists": ["The Kinks"], "album": "Something Else by The Kinks", "duration_ms": 194000, "isrc": "GBAAA6700123" },
+    "candidates": [
+      { "catalog_id": "47a", "title": "Waterloo Sunset", "artists": ["The Kinks"], "album": "Something Else by The Kinks", "duration_ms": 194000, "matched_by": "Isrc" },
+      { "catalog_id": "47b", "title": "Waterloo Sunset - Stereo Mix", "artists": ["The Kinks"], "album": "The Kinks Anthology", "duration_ms": 210000, "matched_by": "Isrc" }
+    ],
+    "expected": "Exact"
+  },
+  {
+    "name": "isrc hit with a different title is still trusted",
+    "source": { "title": "Take Five", "artists": ["The Dave Brubeck Quartet"], "album": "Time Out", "duration_ms": 324000, "isrc": "USSM15900001" },
+    "candidates": [
+      { "catalog_id": "48", "title": "Blue Rondo à la Turk", "artists": ["The Dave Brubeck Quartet"], "album": "Time Out", "duration_ms": 326000, "matched_by": "Isrc" }
+    ],
+    "expected": "Exact"
   }
 ]

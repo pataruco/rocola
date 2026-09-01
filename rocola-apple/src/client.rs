@@ -63,9 +63,7 @@ impl AppleClient {
         tokio::time::sleep(Duration::from_secs(wait)).await;
         match Self::attempt(build()).await? {
             Attempt::Response(response) => Ok(response),
-            Attempt::RateLimited(_) => Err(AppleError::Http(
-                "Apple Music is rate-limiting; wait a minute and re-run".into(),
-            )),
+            Attempt::RateLimited(_) => Err(AppleError::RateLimited),
         }
     }
 
@@ -97,9 +95,10 @@ impl AppleClient {
     /// # Errors
     ///
     /// Returns [`AppleError::Auth`] when Apple rejects the tokens,
-    /// [`AppleError::Http`] for transport failures, rate limiting and any
-    /// other status, and [`AppleError::NotInStorefront`] when Apple answers
-    /// with no storefront at all.
+    /// [`AppleError::RateLimited`] when Apple is still rate-limiting after one
+    /// retry, [`AppleError::Http`] for transport failures and any other
+    /// status, and [`AppleError::NotInStorefront`] when Apple answers with no
+    /// storefront at all.
     pub async fn storefront(&self) -> Result<String, AppleError> {
         #[derive(serde::Deserialize)]
         struct R {
@@ -129,8 +128,9 @@ impl AppleClient {
     ///
     /// # Errors
     ///
-    /// Returns [`AppleError::Auth`] when Apple rejects the tokens, and
-    /// [`AppleError::Http`] for transport failures, rate limiting, any other
+    /// Returns [`AppleError::Auth`] when Apple rejects the tokens,
+    /// [`AppleError::RateLimited`] when Apple is still rate-limiting after one
+    /// retry, and [`AppleError::Http`] for transport failures, any other
     /// status, and unreadable JSON.
     pub async fn resolve_by_isrc(
         &self,
@@ -158,8 +158,9 @@ impl AppleClient {
     ///
     /// # Errors
     ///
-    /// Returns [`AppleError::Auth`] when Apple rejects the tokens, and
-    /// [`AppleError::Http`] for transport failures, rate limiting, any other
+    /// Returns [`AppleError::Auth`] when Apple rejects the tokens,
+    /// [`AppleError::RateLimited`] when Apple is still rate-limiting after one
+    /// retry, and [`AppleError::Http`] for transport failures, any other
     /// status, and unreadable JSON.
     pub async fn search(
         &self,
@@ -182,8 +183,9 @@ impl AppleClient {
     ///
     /// # Errors
     ///
-    /// Returns [`AppleError::Auth`] when Apple rejects the tokens, and
-    /// [`AppleError::Http`] for transport failures, rate limiting, any other
+    /// Returns [`AppleError::Auth`] when Apple rejects the tokens,
+    /// [`AppleError::RateLimited`] when Apple is still rate-limiting after one
+    /// retry, and [`AppleError::Http`] for transport failures, any other
     /// status, unreadable JSON, and a response carrying no playlist id.
     pub async fn create_playlist(
         &self,
@@ -223,8 +225,9 @@ impl AppleClient {
     ///
     /// # Errors
     ///
-    /// Returns [`AppleError::Auth`] when Apple rejects the tokens, and
-    /// [`AppleError::Http`] for transport failures, rate limiting, any other
+    /// Returns [`AppleError::Auth`] when Apple rejects the tokens,
+    /// [`AppleError::RateLimited`] when Apple is still rate-limiting after one
+    /// retry, and [`AppleError::Http`] for transport failures, any other
     /// status, and unreadable JSON.
     pub async fn list_playlist_names(&self) -> Result<Vec<String>, AppleError> {
         let r: crate::api_types::LibraryPlaylists = self
@@ -240,9 +243,10 @@ impl AppleClient {
     ///
     /// # Errors
     ///
-    /// Returns [`AppleError::Auth`] when Apple rejects the tokens, and
-    /// [`AppleError::Http`] for transport failures, rate limiting and any
-    /// other status.
+    /// Returns [`AppleError::Auth`] when Apple rejects the tokens,
+    /// [`AppleError::RateLimited`] when Apple is still rate-limiting after one
+    /// retry, and [`AppleError::Http`] for transport failures and any other
+    /// status.
     pub async fn add_tracks(
         &self,
         playlist_id: &str,

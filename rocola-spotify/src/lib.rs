@@ -7,7 +7,7 @@ pub mod pkce;
 pub mod url;
 
 pub use auth::{TokenSet, refresh, run_auth_flow};
-pub use client::fetch_playlist;
+pub use client::{Playlist, fetch_playlist};
 pub use pkce::{Pkce, REDIRECT_URI, authorize_url};
 pub use url::{PlaylistRef, parse_playlist_url};
 
@@ -17,11 +17,15 @@ pub enum SpotifyError {
     BadUrl(String),
     #[error("Spotify request failed: {0}. Check your connection and try again.")]
     Http(String),
+    #[error("Spotify is asking rocola to slow down. Wait a minute, then run rocola again.")]
+    RateLimited,
     #[error("Spotify sign-in problem: {0}")]
     Auth(String),
     #[error(
-        "Spotify blocks apps like this one from reading Spotify-made playlists \
-         (Discover Weekly, editorial playlists). Try a playlist made by a person."
+        "Spotify couldn't find that playlist. It may have been deleted, it may be private, \
+         or it may be one of Spotify's own playlists — Discover Weekly, Release Radar, an \
+         editorial mix — which Spotify blocks apps like rocola from reading. Check the link, \
+         or try a playlist a person made."
     )]
     RestrictedPlaylist,
     #[error(
