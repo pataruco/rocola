@@ -1,3 +1,5 @@
+mod config;
+
 fn main() {
-    println!("rocola: not implemented yet — see docs/design/");
+    println!("rocola: TUI arrives in the next task");
 }
