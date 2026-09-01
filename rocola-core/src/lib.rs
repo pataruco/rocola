@@ -6,7 +6,9 @@
 
 pub mod matching;
 pub mod normalize;
+pub mod pipeline;
 pub mod types;
 
 pub use matching::{classify, score};
+pub use pipeline::{MusicTarget, match_tracks};
 pub use types::{Candidate, Confidence, MatchedBy, SourceTrack, TrackMatch};
