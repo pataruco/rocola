@@ -12,3 +12,13 @@ workspace = true
 rocola-core = { path = "../rocola-core", version = "0.0.0" }
 rocola-spotify = { path = "../rocola-spotify", version = "0.0.0" }
 rocola-apple = { path = "../rocola-apple", version = "0.0.0" }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+toml = "1"
+dirs = "6"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+ratatui = "0.30"
+crossterm = "0.29"
+
+[dev-dependencies]
+tempfile = "3"
