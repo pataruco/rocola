@@ -78,3 +78,32 @@ impl SearchResponse {
         })
     }
 }
+
+/// The listener's own playlists, as returned by `/v1/me/library/playlists`.
+/// Read only for their names — the duplicate-run guard needs nothing else.
+#[derive(Debug, Deserialize)]
+pub struct LibraryPlaylists {
+    pub data: Vec<LibraryPlaylist>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LibraryPlaylist {
+    pub id: String,
+    pub attributes: LibraryPlaylistAttributes,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LibraryPlaylistAttributes {
+    pub name: String,
+}
+
+impl LibraryPlaylists {
+    /// The name of every playlist in the listener's library.
+    #[must_use]
+    pub fn names(&self) -> Vec<String> {
+        self.data
+            .iter()
+            .map(|p| p.attributes.name.clone())
+            .collect()
+    }
+}

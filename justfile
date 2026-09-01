@@ -28,9 +28,9 @@ ci:
     just lint
     just test
 
-# Run the TUI
-run:
-    cargo run -p rocola
+# Run the TUI: `just run <spotify playlist url>`
+run *args:
+    cargo run -p rocola -- {{args}}
 
 # Live read-only Spotify check (never run in CI). Needs tests/hurl/vars.env — see vars.env.example.
 hurl-spotify:
