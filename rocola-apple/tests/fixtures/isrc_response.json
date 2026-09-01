@@ -1,0 +1,15 @@
+{
+  "data": [
+    {
+      "id": "900032829",
+      "type": "songs",
+      "attributes": {
+        "name": "Umbrella (feat. JAY-Z)",
+        "artistName": "Rihanna",
+        "albumName": "Good Girl Gone Bad",
+        "durationInMillis": 275986,
+        "isrc": "USUM70701234"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "results": {
+    "songs": {
+      "data": [
+        {
+          "id": "1440783625",
+          "type": "songs",
+          "attributes": {
+            "name": "Wish You Were Here",
+            "artistName": "Pink Floyd",
+            "albumName": "Wish You Were Here",
+            "durationInMillis": 334743,
+            "isrc": "GBN9Y1100088"
+          }
+        }
+      ]
+    }
+  }
+}
