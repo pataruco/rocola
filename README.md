@@ -119,15 +119,21 @@ Then a confirm screen shows the counts before anything is written. Press
 
 When rocola finishes, it prints every track that did **not** make it into the
 playlist, under its own heading: the ones you skipped, the ones it couldn't
-find on Apple Music, and the local files and removed tracks that can't exist in
-Apple's catalogue at all. Added + skipped + not found + local and removed
-always adds up to the number of items in the Spotify playlist.
+find on Apple Music, and the local files, podcast episodes and removed tracks
+that can't exist in Apple's catalogue at all. Added + skipped + not found +
+local, podcast and removed accounts for every item in the Spotify playlist.
+
+"Added" means Apple accepted it: rocola counts a song as added when Apple takes
+the batch it was in. It does not yet read the playlist back to confirm what
+landed. If Apple refuses a batch part-way through, rocola says how many songs
+went in before it stopped.
 
 ### Running it twice
 
 If a playlist with that name already exists in your library, rocola stops and
-asks. Say yes and it creates `<name> (rocola)` instead. It never adds to a
-playlist that already exists, and it never quietly makes a duplicate.
+asks. Say yes and it creates `<name> (rocola)` instead — or `<name> (rocola 2)`,
+`(rocola 3)` and so on if those are taken too. It never adds to a playlist that
+already exists, and it never quietly makes a duplicate.
 
 ## What rocola can't do
 
@@ -144,9 +150,9 @@ playlist that already exists, and it never quietly makes a duplicate.
   differ by storefront. Anything missing is reported by name at the end, never
   dropped in silence.
 - **Add to an existing Apple Music playlist.** Not yet.
-- **Copy local files.** Songs you added to a Spotify playlist from your own
-  computer, and tracks Spotify has since removed, don't exist in Apple Music's
-  catalogue. rocola says how many it is leaving out as soon as it reads the
+- **Copy local files or podcasts.** Songs you added to a Spotify playlist from
+  your own computer, podcast episodes, and tracks Spotify has since removed,
+  don't exist in Apple Music's song catalogue. rocola says how many it is leaving out as soon as it reads the
   playlist, and names every one of them at the end.
 
 ## Where your credentials live
@@ -224,8 +230,8 @@ Everyday recipes (`just` with no arguments lists them all):
 | ----------------------- | --------------------------------------------------- |
 | `just ci`               | Everything CI runs — no credentials needed           |
 | `just run <url>`        | Run the TUI from the working tree                   |
-| `just hurl-spotify`     | Live read-only Spotify check. Never in CI           |
-| `just hurl-apple`       | Live Apple Music checks. Never in CI                |
+| `just hurl-spotify`     | Live read-only Spotify check. Also runs in this repo's CI from repo secrets, so it shows red (harmlessly) on pull requests from forks |
+| `just hurl-apple`       | Live Apple Music checks. Local only — they need your own Apple credentials |
 | `just secrets-decrypt`  | `tests/hurl/vars.sops.env` → `vars.env` (needs the GPG key) |
 | `just secrets-encrypt`  | `vars.env` → `vars.sops.env` after editing credentials |
 

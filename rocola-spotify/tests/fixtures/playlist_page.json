@@ -6,6 +6,7 @@
       "item": {
         "name": "Umbrella",
         "duration_ms": 275000,
+        "type": "track",
         "album": { "name": "Good Girl Gone Bad" },
         "artists": [{ "name": "Rihanna" }, { "name": "JAY-Z" }],
         "external_ids": { "isrc": "USUM70701234" },
@@ -18,10 +19,20 @@
       "item": {
         "name": "Home Recording",
         "duration_ms": 100000,
+        "type": "track",
         "album": { "name": "" },
         "artists": [{ "name": "Me" }],
         "external_ids": {},
         "is_local": true
+      }
+    },
+    {
+      "is_local": false,
+      "item": {
+        "name": "The Rest Is History: The Fall of Rome",
+        "duration_ms": 3300000,
+        "type": "episode",
+        "is_local": false
       }
     }
   ]

@@ -16,8 +16,8 @@ pub struct Playlist {
     pub name: String,
     pub tracks: Vec<SourceTrack>,
     /// One line per item rocola can't look up on Apple Music — local files,
-    /// and tracks Spotify has removed — in playlist order. Reported at the
-    /// end of the run, never dropped.
+    /// podcast episodes, and tracks Spotify has removed — in playlist order.
+    /// Reported at the end of the run, never dropped.
     pub skipped: Vec<String>,
 }
 
@@ -83,7 +83,7 @@ pub async fn fetch_playlist(
     let mut tracks = Vec::new();
     let mut skipped = Vec::new();
     let mut next = Some(format!(
-        "https://api.spotify.com/v1/playlists/{}/items?limit=100&fields=next,items(is_local,item(name,duration_ms,is_local,album(name),artists(name),external_ids))",
+        "https://api.spotify.com/v1/playlists/{}/items?limit=100&fields=next,items(is_local,item(name,duration_ms,is_local,type,album(name),artists(name),external_ids))",
         playlist.0
     ));
     while let Some(url) = next {

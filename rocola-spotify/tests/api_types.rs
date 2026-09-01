@@ -14,13 +14,15 @@ fn splits_a_page_into_tracks_and_named_leftovers() {
     );
     assert_eq!(split.tracks[0].isrc.as_deref(), Some("USUM70701234"));
 
-    // The page also holds one removed (null) track and one local file. Both
-    // must survive as named lines, in playlist order — never dropped.
+    // The page also holds one removed (null) track, one local file and one
+    // podcast episode. All three must survive as named lines, in playlist
+    // order — never dropped, and never a failed parse.
     assert_eq!(
         split.skipped,
         vec![
             "(removed track)".to_string(),
-            "Home Recording — Me".to_string()
+            "Home Recording — Me".to_string(),
+            "The Rest Is History: The Fall of Rome (podcast episode)".to_string()
         ]
     );
 

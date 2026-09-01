@@ -11,7 +11,9 @@ use ratatui::backend::CrosstermBackend;
 use rocola_apple::client::AppleClient;
 use rocola_apple::{AppleError, AppleTarget, mint_developer_token, run_user_auth};
 use rocola_core::{Candidate, MusicTarget, SourceTrack, TrackMatch, match_tracks};
-use rocola_spotify::{Playlist, fetch_playlist, parse_playlist_url, refresh, run_auth_flow};
+use rocola_spotify::{
+    Playlist, SpotifyError, fetch_playlist, parse_playlist_url, refresh, run_auth_flow,
+};
 
 use crate::app::{App, Decision, Key, Screen};
 use crate::config::Config;
@@ -19,8 +21,8 @@ use crate::{setup, ui};
 
 const PLAYLIST_DESCRIPTION: &str = "Recreated from Spotify by rocola";
 
-/// Heading for the tracks Spotify has, but Apple Music never can.
-const UNMATCHABLE_HEADING: &str = "Local files and removed tracks:";
+/// Heading for the items Spotify has, but Apple Music never can.
+const UNMATCHABLE_HEADING: &str = "Local files, podcast episodes and removed tracks:";
 
 /// Recreate the playlist at `url` on Apple Music.
 ///
@@ -50,7 +52,7 @@ pub async fn run(url: &str) -> anyhow::Result<()> {
     );
     if !unmatchable.is_empty() {
         println!(
-            "Leaving out {n} — local files and tracks Spotify has removed aren't in Apple Music's catalogue. They're named at the end.",
+            "Leaving out {n} — local files, podcast episodes and tracks Spotify has removed aren't in Apple Music's catalogue. They're named at the end.",
             n = ui::songs(unmatchable.len())
         );
     }
@@ -117,7 +119,22 @@ pub async fn run(url: &str) -> anyhow::Result<()> {
 /// A fresh access token, and a refresh token in the config for next time.
 async fn spotify_token(config: &mut Config, config_path: &Path) -> anyhow::Result<String> {
     let tokens = match config.spotify.refresh_token.as_deref() {
-        Some(refresh_token) => refresh(&config.spotify.client_id, refresh_token).await?,
+        Some(refresh_token) => match refresh(&config.spotify.client_id, refresh_token).await {
+            Ok(tokens) => tokens,
+            // A refresh token Spotify no longer accepts — revoked, or unused
+            // for a year — is a routine end of a sign-in, not a failed run.
+            // Drop it before signing in again, so a crash mid-flow can never
+            // leave the dead one behind to fail the same way next time.
+            Err(SpotifyError::Auth(_)) => {
+                println!(
+                    "Your Spotify sign-in has expired — opening the browser to sign in again."
+                );
+                config.spotify.refresh_token = None;
+                config.save(config_path)?;
+                run_auth_flow(&config.spotify.client_id).await?
+            }
+            Err(other) => return Err(other.into()),
+        },
         None => run_auth_flow(&config.spotify.client_id).await?,
     };
     // Spotify doesn't rotate the refresh token on use, but it is free to
@@ -274,7 +291,6 @@ const fn to_key(code: KeyCode) -> Option<Key> {
         KeyCode::Char(c) => match c {
             '1'..='9' => Some(Key::Digit(c as u8 - b'0')),
             's' => Some(Key::Skip),
-            'A' => Some(Key::AcceptAllHigh),
             'q' => Some(Key::Abort),
             _ => None,
         },
@@ -341,24 +357,32 @@ impl WriteSession<'_> {
         playlist_id: &str,
         catalog_ids: &[String],
     ) -> anyhow::Result<()> {
-        let first = self.client.add_tracks(playlist_id, catalog_ids).await;
-        if !self.can_retry(&first) {
-            return first.map_err(|e| orphaned(name, &e));
+        let total = catalog_ids.len();
+        let Err(failure) = self.client.add_tracks(playlist_id, catalog_ids).await else {
+            return Ok(());
+        };
+        if !(self.retry_available && matches!(failure.error, AppleError::Auth(_))) {
+            return Err(orphaned(name, failure.added, total, &failure.error));
         }
-        self.reconnect().await.map_err(|e| orphaned(name, &e))?;
-        self.client
-            .add_tracks(playlist_id, catalog_ids)
+        self.reconnect()
             .await
-            .map_err(|e| orphaned(name, &e))
+            .map_err(|e| orphaned(name, failure.added, total, &e))?;
+        // Apple already holds the songs of every batch that landed. The retry
+        // sends only what is left, or the playlist would gain duplicates.
+        self.client
+            .add_tracks(playlist_id, &catalog_ids[failure.added..])
+            .await
+            .map_err(|again| orphaned(name, failure.added + again.added, total, &again.error))
     }
 }
 
-/// The playlist exists but is empty. Say so, and say what to do about it —
+/// The playlist exists but is missing songs — all of them, or the ones after
+/// the batch Apple refused. Say how many landed and say what to do about it:
 /// silence here leaves an unexplained playlist and a baffling duplicate-run
 /// prompt on the next run.
-fn orphaned(name: &str, e: &impl std::fmt::Display) -> anyhow::Error {
+fn orphaned(name: &str, added: usize, total: usize, e: &impl std::fmt::Display) -> anyhow::Error {
     anyhow::anyhow!(
-        "Created \"{name}\" but couldn't add the songs: {e}. Delete it in Music.app and run rocola again."
+        "Created \"{name}\" and added {added} of {total} songs before Apple refused: {e}. Check the playlist in Music.app, delete it, and run rocola again."
     )
 }
 
@@ -407,16 +431,19 @@ async fn playlist_name(
     session: &mut WriteSession<'_>,
     wanted: &str,
 ) -> anyhow::Result<Option<String>> {
-    if !session
-        .list_playlist_names()
-        .await?
-        .iter()
-        .any(|name| name == wanted)
-    {
+    let taken = session.list_playlist_names().await?;
+    if !taken.iter().any(|name| name == wanted) {
         return Ok(Some(wanted.to_owned()));
     }
+    let suggestion = free_name(wanted, &taken);
+    // Say why the number is there, or "(rocola 2)" reads as a glitch.
+    let also_taken = if suggestion == format!("{wanted} (rocola)") {
+        String::new()
+    } else {
+        format!(" \"{wanted} (rocola)\" is taken too.")
+    };
     print!(
-        "You already have an Apple Music playlist called \"{wanted}\". rocola can't add songs to a playlist that already exists. Create \"{wanted} (rocola)\" instead? [y/N] "
+        "You already have an Apple Music playlist called \"{wanted}\".{also_taken} rocola can't add songs to a playlist that already exists. Create \"{suggestion}\" instead? [y/N] "
     );
     std::io::stdout().flush()?;
     let mut answer = String::new();
@@ -424,7 +451,21 @@ async fn playlist_name(
     Ok(answer
         .trim()
         .eq_ignore_ascii_case("y")
-        .then(|| format!("{wanted} (rocola)")))
+        .then_some(suggestion))
+}
+
+/// `"{wanted} (rocola)"`, or `"(rocola 2)"`, `"(rocola 3)"`… — the first
+/// suffix the library doesn't already hold. Running rocola twice more on the
+/// same playlist must not silently write a second `"(rocola)"` beside the
+/// first.
+fn free_name(wanted: &str, taken: &[String]) -> String {
+    let mut candidate = format!("{wanted} (rocola)");
+    let mut n = 2usize;
+    while taken.contains(&candidate) {
+        candidate = format!("{wanted} (rocola {n})");
+        n += 1;
+    }
+    candidate
 }
 
 /// One heading and one line per entry — the spec's rule that nothing is ever
@@ -452,7 +493,7 @@ fn track_line(track: &TrackMatch) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{orphaned, track_line};
+    use super::{free_name, orphaned, track_line};
     use rocola_core::{Confidence, SourceTrack, TrackMatch};
 
     #[test]
@@ -472,12 +513,32 @@ mod tests {
     }
 
     #[test]
-    fn an_empty_playlist_says_so_and_says_what_to_do() {
-        let error = orphaned("Roadtrip", &"Apple Music answered 500");
+    fn a_half_written_playlist_says_how_many_landed_and_what_to_do() {
+        let error = orphaned("Roadtrip", 100, 250, &"Apple Music answered 500");
         assert_eq!(
             error.to_string(),
-            "Created \"Roadtrip\" but couldn't add the songs: Apple Music answered 500. \
-             Delete it in Music.app and run rocola again."
+            "Created \"Roadtrip\" and added 100 of 250 songs before Apple refused: \
+             Apple Music answered 500. Check the playlist in Music.app, delete it, \
+             and run rocola again."
+        );
+    }
+
+    #[test]
+    fn the_suffix_walks_past_every_name_already_taken() {
+        assert_eq!(free_name("Roadtrip", &[]), "Roadtrip (rocola)");
+        assert_eq!(
+            free_name("Roadtrip", &["Roadtrip (rocola)".to_owned()]),
+            "Roadtrip (rocola 2)"
+        );
+        assert_eq!(
+            free_name(
+                "Roadtrip",
+                &[
+                    "Roadtrip (rocola)".to_owned(),
+                    "Roadtrip (rocola 2)".to_owned(),
+                ]
+            ),
+            "Roadtrip (rocola 3)"
         );
     }
 }
